@@ -51,7 +51,7 @@ An example with HMACs:
 
 This module provides one function, C<equals> (not exported by default).
 
-You should pass this function two strings of the same length. Just like perl's C<eq>, it will return true if they are string-wise identical and false otherwise. However, comparing any two differing strings of the same length will take a fixed amount of time. If the lengths of the strings are different, C<equals> will return false right away.
+You should pass this function two strings of the same length. Just like perl's C<eq>, it will return true if they are string-wise identical and false otherwise. However, comparing any two differing strings of the same length will take a fixed amount of time. If the lengths of the strings are different, C<equals> will spend time proportional to a length of the user-supplied string and return false anyway.
 
 B<NOTE>: This does byte-wise comparison of the underlying string storage, meaning that comparing strings with non-ASCII data with different states of the internal UTF-8 flag is not reliable.  You should always encode your data to bytes before comparing.
 
@@ -61,8 +61,6 @@ B<NOTE>: This does byte-wise comparison of the underlying string storage, meanin
 Some programs take different amounts of time to run depending on the input values provided to them. Untrusted parties can sometimes learn information you might not want them to know by measuring this time. This is called a "timing side-channel".
 
 Most routines that compare strings (like perl's C<eq> and C<cmp> and C's C<strcmp> and C<memcmp>) start scanning from the start of the strings and terminate as soon as they determine the strings won't match. This is good for efficiency but bad because it opens a timing side-channel. If one of the strings being compared is a secret and the other is controlled by some untrusted party, it is sometimes possible for this untrusted party to learn the secret using a timing side-channel.
-
-If the lengths of the strings are different, because C<equals> returns false right away the size of the secret string may be leaked (but not its contents).
 
 
 

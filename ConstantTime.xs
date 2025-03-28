@@ -4,12 +4,21 @@
 
 
 
-static int do_compare(unsigned char *a, unsigned char *b, size_t n) {
+static int do_compare(unsigned char *a, size_t a_len, unsigned char *b, size_t b_len) {
   size_t i;
-  unsigned char r = 0;
+  unsigned char *s;
+  unsigned char r;
+  uintptr_t mask;
 
-  for (i = 0; i < n; i++) {
-    r |= *a++ ^ *b++;
+  /* Orchestrate a dummy compare which never matches and whose run-time does
+   * not stand out if a_len != b_len */
+  r = (a_len != b_len);
+  /* Branching-less: s = (r) ? b : a */
+  mask = (uintptr_t)0u - r;
+  s = (unsigned char *)(((uintptr_t)b & mask) | ((uintptr_t)a & ~mask));
+
+  for (i = 0; i < b_len; i++) {
+    r |= *s++ ^ *b++;
   }
 
   return r;
@@ -41,11 +50,7 @@ equals(a, b)
           ap = SvPV(a, alen);
           bp = SvPV(b, blen);
 
-          if (alen == blen) {
-            r = !do_compare(ap, bp, alen);
-          } else {
-            r = 0;
-          }
+          r = !do_compare(ap, alen, bp, blen);
         } else if (SvOK(a) || SvOK(b)) {
           r = 0;
         } else {
